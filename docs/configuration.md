@@ -10,6 +10,7 @@ produces a readable error and an HTTP 500 `misconfigured` response instead of un
 | `OPENAI_BASE_URL`              | `https://api.openai.com/v1`                              | Base URL for an OpenAI Chat Completions-compatible server                  |
 | `OPENAI_API_KEY`               | _(unset)_                                                | Enables the OpenAI-compatible engine; sent only as a bearer header         |
 | `OPENAI_MODEL`                 | `gpt-4o-mini`                                            | Model name sent to the OpenAI-compatible server                            |
+| `LECTERN_GEMINI_ENABLED`       | `true`                                                   | Set to `false` to ignore a system-wide `GEMINI_API_KEY`                    |
 | `GEMINI_API_KEY`               | _(unset)_                                                | Enables Gemini. The key is only ever sent in a request header              |
 | `GEMINI_MODEL`                 | `gemini-flash-latest`                                    | Gemini model name                                                          |
 | `NOTES_MAX_TRANSCRIPT_CHARS`   | `500000`                                                 | Largest transcript accepted by `/api/notes` (413 above)                    |

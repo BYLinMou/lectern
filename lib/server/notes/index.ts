@@ -34,7 +34,10 @@ export async function getEngineStatus(): Promise<EngineStatus> {
       baseUrl: env.OPENAI_BASE_URL,
       model: env.OPENAI_MODEL,
     },
-    gemini: { configured: !!env.GEMINI_API_KEY, model: env.GEMINI_MODEL },
+    gemini: {
+      configured: env.LECTERN_GEMINI_ENABLED && !!env.GEMINI_API_KEY,
+      model: env.GEMINI_MODEL,
+    },
     whisper: getWhisperStatus(),
   };
 }

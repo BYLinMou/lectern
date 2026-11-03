@@ -5,6 +5,15 @@ import { DEFAULT_WHISPER_PORT, defaultWhisperBinPath, defaultWhisperModelPath } 
 const optional = <T extends z.ZodType>(schema: T) =>
   z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? undefined : v), schema);
 
+const booleanFlag = (defaultValue: boolean) =>
+  z.preprocess((v) => {
+    if (typeof v !== "string") return v;
+    const normalized = v.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1") return true;
+    if (normalized === "false" || normalized === "0") return false;
+    return v;
+  }, z.boolean().default(defaultValue));
+
 const EnvSchema = z.object({
   OLLAMA_HOST: optional(z.url().default("http://127.0.0.1:11434")).transform((v) =>
     v.replace(/\/+$/, ""),
@@ -15,6 +24,8 @@ const EnvSchema = z.object({
   ),
   OPENAI_API_KEY: optional(z.string().trim().default("")),
   OPENAI_MODEL: optional(z.string().trim().default("gpt-4o-mini")),
+  /** Set to false when a system-wide GEMINI_API_KEY belongs to another application. */
+  LECTERN_GEMINI_ENABLED: booleanFlag(true),
   GEMINI_API_KEY: optional(z.string().trim().default("")),
   GEMINI_MODEL: optional(z.string().trim().default("gemini-flash-latest")),
   /** Hard cap on transcript size accepted by /api/notes. */

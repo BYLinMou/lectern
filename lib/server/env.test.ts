@@ -10,6 +10,7 @@ describe("parseEnv", () => {
       OPENAI_BASE_URL: "https://api.openai.com/v1",
       OPENAI_API_KEY: "",
       OPENAI_MODEL: "gpt-4o-mini",
+      LECTERN_GEMINI_ENABLED: true,
       GEMINI_API_KEY: "",
       GEMINI_MODEL: "gemini-flash-latest",
       NOTES_MAX_TRANSCRIPT_CHARS: 500_000,
@@ -29,6 +30,16 @@ describe("parseEnv", () => {
     expect(env.OLLAMA_HOST).toBe("http://127.0.0.1:11434");
     expect(env.GEMINI_MODEL).toBe("gemini-flash-latest");
     expect(env.NOTES_RATE_LIMIT_PER_MINUTE).toBe(20);
+  });
+
+  it("parses the Gemini app toggle without changing the system key", () => {
+    expect(
+      parseEnv({ GEMINI_API_KEY: "system-key", LECTERN_GEMINI_ENABLED: "false" }),
+    ).toMatchObject({
+      GEMINI_API_KEY: "system-key",
+      LECTERN_GEMINI_ENABLED: false,
+    });
+    expect(parseEnv({ LECTERN_GEMINI_ENABLED: "1" }).LECTERN_GEMINI_ENABLED).toBe(true);
   });
 
   it("strips trailing slashes and trims values", () => {

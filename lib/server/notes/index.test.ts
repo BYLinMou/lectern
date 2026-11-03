@@ -46,6 +46,7 @@ beforeEach(() => {
   vi.stubEnv("OLLAMA_MODEL", "");
   vi.stubEnv("OPENAI_API_KEY", "");
   vi.stubEnv("OPENAI_MODEL", "test-model");
+  vi.stubEnv("LECTERN_GEMINI_ENABLED", "true");
   vi.stubEnv("GEMINI_API_KEY", "");
   resetEnvCache();
 });

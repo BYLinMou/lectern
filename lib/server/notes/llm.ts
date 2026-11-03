@@ -163,7 +163,8 @@ export async function createOpenAIClient(): Promise<LlmClient> {
 }
 
 export async function createGeminiClient(): Promise<LlmClient> {
-  const { GEMINI_API_KEY, GEMINI_MODEL } = getEnv();
+  const { GEMINI_API_KEY, GEMINI_MODEL, LECTERN_GEMINI_ENABLED } = getEnv();
+  if (!LECTERN_GEMINI_ENABLED) throw new Error("Gemini is disabled by LECTERN_GEMINI_ENABLED");
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
   return {
     engine: "gemini",

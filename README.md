@@ -175,6 +175,7 @@ Copy `.env.example` to `.env.local`. Everything is optional.
 | `OPENAI_BASE_URL`              | `https://api.openai.com/v1`                              | OpenAI Chat Completions-compatible API base URL           |
 | `OPENAI_API_KEY`               | _(unset)_                                                | Enables the OpenAI-compatible engine                      |
 | `OPENAI_MODEL`                 | `gpt-4o-mini`                                            | OpenAI-compatible model name                              |
+| `LECTERN_GEMINI_ENABLED`       | `true`                                                   | Set to `false` to ignore a system-wide Gemini key         |
 | `GEMINI_API_KEY`               | _(unset)_                                                | Enables the Gemini engine                                 |
 | `GEMINI_MODEL`                 | `gemini-flash-latest`                                    | Gemini model                                              |
 | `NOTES_MAX_TRANSCRIPT_CHARS`   | `500000`                                                 | Largest transcript `/api/notes` accepts                   |

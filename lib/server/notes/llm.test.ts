@@ -8,6 +8,7 @@ beforeEach(() => {
   vi.stubEnv("OPENAI_BASE_URL", "https://api.openai.test/v1");
   vi.stubEnv("OPENAI_API_KEY", "openai-secret");
   vi.stubEnv("OPENAI_MODEL", "test-model");
+  vi.stubEnv("LECTERN_GEMINI_ENABLED", "true");
   vi.stubEnv("GEMINI_API_KEY", "secret");
   resetEnvCache();
 });
@@ -171,5 +172,11 @@ describe("createGeminiClient", () => {
     vi.stubEnv("GEMINI_API_KEY", "");
     resetEnvCache();
     await expect(createGeminiClient()).rejects.toThrow(/GEMINI_API_KEY/);
+  });
+
+  it("can be disabled while a system key remains available", async () => {
+    vi.stubEnv("LECTERN_GEMINI_ENABLED", "false");
+    resetEnvCache();
+    await expect(createGeminiClient()).rejects.toThrow(/LECTERN_GEMINI_ENABLED/);
   });
 });
