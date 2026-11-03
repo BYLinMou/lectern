@@ -42,7 +42,7 @@ function notesLabel(value: string) {
 /** What "automatic" will actually use right now, so the user is never guessing. */
 function engineSummary(choice: NotesEngineChoice, engines: EngineStatus | null): string {
   if (choice === "offline") return "Offline summarizer";
-  if (choice === "gemini") return "Gemini";
+  if (choice === "gemini") return engines?.gemini.disabled ? "Gemini (disabled)" : "Gemini";
   if (choice === "openai") {
     return engines?.openai.configured
       ? `OpenAI-compatible · ${engines.openai.model}`
@@ -74,6 +74,8 @@ function engineHint(choice: NotesEngineChoice, engines: EngineStatus | null): st
   if (choice === "ollama" && !engines.ollama.reachable) return "Ollama is not running right now.";
   if (choice === "openai" && !engines.openai.configured)
     return "Set OPENAI_API_KEY (and optionally OPENAI_BASE_URL and OPENAI_MODEL) on the server.";
+  if (choice === "gemini" && engines.gemini.disabled)
+    return "Gemini is disabled by LECTERN_GEMINI_ENABLED.";
   if (choice === "gemini" && !engines.gemini.configured) return "No GEMINI_API_KEY is configured.";
   return "";
 }

@@ -36,6 +36,7 @@ export async function getEngineStatus(): Promise<EngineStatus> {
     },
     gemini: {
       configured: env.LECTERN_GEMINI_ENABLED && !!env.GEMINI_API_KEY,
+      disabled: !env.LECTERN_GEMINI_ENABLED,
       model: env.GEMINI_MODEL,
     },
     whisper: getWhisperStatus(),

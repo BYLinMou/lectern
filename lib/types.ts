@@ -47,7 +47,7 @@ export type WhisperEngineStatus = {
 export type EngineStatus = {
   ollama: { reachable: boolean; host: string; models: string[]; selected: string | null };
   openai: { configured: boolean; baseUrl: string; model: string };
-  gemini: { configured: boolean; model: string };
+  gemini: { configured: boolean; disabled: boolean; model: string };
   whisper: WhisperEngineStatus;
 };
 

@@ -194,7 +194,11 @@ describe("getEngineStatus", () => {
       baseUrl: "https://api.openai.com/v1",
       model: "test-model",
     });
-    expect(s.gemini).toEqual({ configured: true, model: "gemini-flash-latest" });
+    expect(s.gemini).toEqual({
+      configured: true,
+      disabled: false,
+      model: "gemini-flash-latest",
+    });
   });
 
   it("reports an unreachable Ollama without throwing", async () => {

@@ -150,7 +150,7 @@ test.beforeEach(async ({ page }) => {
           baseUrl: "https://api.openai.com/v1",
           model: "gpt-4o-mini",
         },
-        gemini: { configured: false, model: "gemini-flash-latest" },
+        gemini: { configured: false, disabled: false, model: "gemini-flash-latest" },
         whisper: {
           available: true,
           ready: true,

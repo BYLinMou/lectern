@@ -65,7 +65,7 @@ export function EngineStrip({
   previewSupported: boolean;
 }) {
   const model = modelId.split("/").pop();
-  const geminiOk = !!engines?.gemini.configured;
+  const gemini = engines?.gemini;
   const chips: Chip[] = [
     {
       label: `Whisper ${model}: ${whisperText(whisper)}`,
@@ -80,8 +80,12 @@ export function EngineStrip({
     ollamaChip(engines),
     openaiChip(engines),
     {
-      label: geminiOk ? "Gemini: key set" : "Gemini: no key (optional)",
-      state: geminiOk ? "ok" : "idle",
+      label: gemini?.disabled
+        ? "Gemini: disabled"
+        : gemini?.configured
+          ? "Gemini: key set"
+          : "Gemini: no key",
+      state: gemini?.disabled || !gemini?.configured ? "idle" : "ok",
     },
     { label: "Offline summarizer: always available", state: "ok" },
   ];
