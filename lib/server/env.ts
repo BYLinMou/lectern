@@ -10,6 +10,11 @@ const EnvSchema = z.object({
     v.replace(/\/+$/, ""),
   ),
   OLLAMA_MODEL: optional(z.string().trim().default("")),
+  OPENAI_BASE_URL: optional(z.url().default("https://api.openai.com/v1")).transform((v) =>
+    v.replace(/\/+$/, ""),
+  ),
+  OPENAI_API_KEY: optional(z.string().trim().default("")),
+  OPENAI_MODEL: optional(z.string().trim().default("gpt-4o-mini")),
   GEMINI_API_KEY: optional(z.string().trim().default("")),
   GEMINI_MODEL: optional(z.string().trim().default("gemini-flash-latest")),
   /** Hard cap on transcript size accepted by /api/notes. */

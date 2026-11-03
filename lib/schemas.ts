@@ -31,7 +31,7 @@ export const LectureSchema = z.object({
   notesGlossary: z.boolean().optional(),
   audioLanguage: z.string(),
   sttEngine: z.string(),
-  notesEngine: z.enum(["ollama", "gemini", "offline"]).nullable(),
+  notesEngine: z.enum(["ollama", "openai", "gemini", "offline"]).nullable(),
   durationSec: z.number().optional(),
   segments: z.array(SegmentSchema).optional(),
   hasAudio: z.boolean().optional(),

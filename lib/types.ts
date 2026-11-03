@@ -22,7 +22,7 @@ export type Notes = {
   examHints?: string[];
 };
 
-export type NotesEngine = "ollama" | "gemini" | "offline";
+export type NotesEngine = "ollama" | "openai" | "gemini" | "offline";
 export type NotesEngineChoice = "auto" | NotesEngine;
 
 export type NotesResult = {
@@ -46,6 +46,7 @@ export type WhisperEngineStatus = {
 
 export type EngineStatus = {
   ollama: { reachable: boolean; host: string; models: string[]; selected: string | null };
+  openai: { configured: boolean; baseUrl: string; model: string };
   gemini: { configured: boolean; model: string };
   whisper: WhisperEngineStatus;
 };

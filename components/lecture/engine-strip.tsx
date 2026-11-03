@@ -43,6 +43,16 @@ function ollamaChip(engines: EngineStatus | null): Chip {
   };
 }
 
+function openaiChip(engines: EngineStatus | null): Chip {
+  if (!engines) return { label: "OpenAI-compatible: checking…", state: "idle" };
+  return {
+    label: engines.openai.configured
+      ? `OpenAI-compatible: ${engines.openai.model}`
+      : "OpenAI-compatible: not configured",
+    state: engines.openai.configured ? "ok" : "idle",
+  };
+}
+
 export function EngineStrip({
   whisper,
   modelId,
@@ -68,6 +78,7 @@ export function EngineStrip({
       state: previewSupported ? "ok" : "idle",
     },
     ollamaChip(engines),
+    openaiChip(engines),
     {
       label: geminiOk ? "Gemini: key set" : "Gemini: no key (optional)",
       state: geminiOk ? "ok" : "idle",
