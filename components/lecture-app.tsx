@@ -33,6 +33,8 @@ export function LectureApp() {
             activeId={session.current?.id ?? null}
             onSelect={session.selectLecture}
             onDelete={session.removeLecture}
+            onMove={session.moveLecture}
+            disabled={session.busy || session.recorder.recording}
           />
           <BackupPanel session={session} />
           <StoragePanel session={session} />

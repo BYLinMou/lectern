@@ -36,6 +36,7 @@ export const LectureSchema = z.object({
   segments: z.array(SegmentSchema).optional(),
   hasAudio: z.boolean().optional(),
   context: z.string().optional(),
+  project: z.string().trim().min(1).optional().catch(undefined),
 });
 
 /** Keep every well-formed lecture from untrusted storage and drop the rest. */

@@ -78,4 +78,6 @@ export type Lecture = {
   hasAudio?: boolean;
   /** Optional course/topic hints the notes were generated with. */
   context?: string;
+  /** Optional project name; older recordings without one remain ungrouped. */
+  project?: string;
 };

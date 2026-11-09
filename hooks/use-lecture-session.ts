@@ -787,6 +787,15 @@ export function useLectureSession() {
   // --- history ------------------------------------------------------------------------------
   const busy = pending > 0 || finalizing || generating;
 
+  const moveLecture = useCallback(
+    (lecture: Lecture, project?: string) => {
+      if (recorder.recording || busy) return;
+      persist({ ...lecture, project });
+      if (currentRef.current?.id === lecture.id) patchCurrent({ project });
+    },
+    [busy, recorder.recording, patchCurrent],
+  );
+
   const selectLecture = useCallback(
     (l: Lecture) => {
       if (recorder.recording || busy) return;
@@ -1000,6 +1009,7 @@ export function useLectureSession() {
     uploadFile,
     generateNotes,
     selectLecture,
+    moveLecture,
     removeLecture,
     copyMarkdown,
     downloadMarkdown,
