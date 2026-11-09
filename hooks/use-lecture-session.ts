@@ -15,6 +15,7 @@ import {
   estimateStorage,
   getChunks,
   getSession,
+  listSessions,
   listUnfinishedSessions,
   patchChunk,
   putChunk,
@@ -41,7 +42,13 @@ import {
   useSessionPreferences,
   type SessionPreferences,
 } from "@/lib/session-preferences";
-import { deleteLecture, saveLecture, useLectures } from "@/lib/storage";
+import {
+  deleteLecture,
+  readLectures,
+  renameProject as renameStoredProject,
+  saveLecture,
+  useLectures,
+} from "@/lib/storage";
 import { decodeToMono16k } from "@/lib/stt/audio";
 import { shortModelName } from "@/lib/stt/models";
 import { CancelledError, transcribeSamples } from "@/lib/stt/pipeline";
@@ -95,6 +102,8 @@ export function useLectureSession() {
   // --- session state ------------------------------------------------------------------------
   const [engines, setEngines] = useState<EngineStatus | null>(null);
   const [current, setCurrent] = useState<Lecture | null>(null);
+  const [activeProject, setActiveProject] = useState<string | null>(null);
+  const [projectHome, setProjectHome] = useState(false);
   const [notesMeta, setNotesMeta] = useState<NotesMeta | null>(null);
   const [pending, setPending] = useState(0);
   const [partsProgress, setPartsProgress] = useState<{ done: number; total: number } | null>(null);
@@ -130,6 +139,7 @@ export function useLectureSession() {
   /** Timeline position (seconds) where the next live chunk begins. */
   const liveCursorRef = useRef({ t: 0 });
   const settings = useRef({
+    project: activeProject,
     audioLang,
     notesLang,
     engineChoice,
@@ -142,6 +152,7 @@ export function useLectureSession() {
 
   useEffect(() => {
     settings.current = {
+      project: activeProject,
       audioLang,
       notesLang,
       engineChoice,
@@ -475,7 +486,10 @@ export function useLectureSession() {
         s.audioLang,
         s.notesLang,
         `Whisper ${shortModelName(s.modelId)} (local)`,
-        fileName ? { title: fileName.replace(/\.[^.]+$/, "") } : {},
+        {
+          ...(fileName ? { title: fileName.replace(/\.[^.]+$/, "") } : {}),
+          project: s.project ?? undefined,
+        },
       );
       setLecture(lecture);
 
@@ -490,6 +504,7 @@ export function useLectureSession() {
           audioLanguage: s.audioLang,
           notesLanguage: s.notesLang,
           sttEngine: lecture.sttEngine,
+          project: lecture.project,
         });
         hasSessionRef.current = true;
       });
@@ -760,12 +775,17 @@ export function useLectureSession() {
       setPersistenceOk(true);
       setNotice(null);
       setNotesMeta(null);
+      const storedLecture = readLectures().find((l) => l.id === sessionId);
+      const project = storedLecture ? storedLecture.project : session.project;
+      setActiveProject(project ?? null);
+      setProjectHome(false);
       setLecture(
         newLecture(session.audioLanguage, session.notesLanguage, session.sttEngine, {
           id: session.id,
           createdAt: session.createdAt,
           title: `Recovered: ${session.title}`,
           hasAudio: true,
+          project,
         }),
       );
       setUnfinished((list) => list.filter((s) => s.id !== sessionId));
@@ -787,11 +807,50 @@ export function useLectureSession() {
   // --- history ------------------------------------------------------------------------------
   const busy = pending > 0 || finalizing || generating;
 
+  const openProject = useCallback(
+    (project: string | null, home = true) => {
+      if (recorder.recording || busy) return;
+      setActiveProject(project);
+      setProjectHome(project !== null && home);
+      setLecture(null);
+      setNotesMeta(null);
+      setNotice(null);
+      setContext("");
+      setAudioInfo(null);
+    },
+    [busy, recorder.recording, setLecture],
+  );
+
+  const renameProject = useCallback(
+    (value: string): boolean => {
+      const name = value.trim();
+      if (!activeProject || !name || recorder.recording || busy) return false;
+      if (name === activeProject) return true;
+      if (readLectures().some((l) => l.project === name)) {
+        toast.error("A project with that name already exists.");
+        return false;
+      }
+      if (!renameStoredProject(activeProject, name)) toast.error(STORAGE_FULL_MESSAGE);
+      void write(async () => {
+        for (const session of await listSessions()) {
+          if (session.project === activeProject) await updateSession(session.id, { project: name });
+        }
+      });
+      if (currentRef.current?.project === activeProject) patchCurrent({ project: name });
+      setActiveProject(name);
+      return true;
+    },
+    [activeProject, busy, recorder.recording, patchCurrent, write],
+  );
+
   const moveLecture = useCallback(
     (lecture: Lecture, project?: string) => {
       if (recorder.recording || busy) return;
       persist({ ...lecture, project });
-      if (currentRef.current?.id === lecture.id) patchCurrent({ project });
+      if (currentRef.current?.id === lecture.id) {
+        patchCurrent({ project });
+        setActiveProject(project ?? null);
+      }
     },
     [busy, recorder.recording, patchCurrent],
   );
@@ -800,6 +859,8 @@ export function useLectureSession() {
     (l: Lecture) => {
       if (recorder.recording || busy) return;
       segmentsRef.current = l.segments ?? [];
+      setActiveProject(l.project ?? null);
+      setProjectHome(false);
       setLecture(l);
       setNotesMeta(l.notesEngine ? { engine: l.notesEngine, fallbackReasons: [] } : null);
       setNotice(null);
@@ -965,6 +1026,10 @@ export function useLectureSession() {
   return {
     // data
     lectures,
+    activeProject,
+    projectHome,
+    openProject,
+    renameProject,
     current,
     notesMeta,
     engines,
