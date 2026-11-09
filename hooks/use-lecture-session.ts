@@ -8,7 +8,7 @@ import { startPcmTap, type PcmTap } from "@/lib/audio/pcm-tap";
 import { LiveTranscriber } from "@/lib/stt/live";
 import { useRecorder, type RecordedChunk } from "@/hooks/use-recorder";
 import { useSpeechPreview } from "@/hooks/use-speech-preview";
-import { MODEL_NATIVE, useWhisper } from "@/hooks/use-whisper";
+import { useWhisper } from "@/hooks/use-whisper";
 import {
   createSession,
   deleteSession,
@@ -23,11 +23,7 @@ import {
   type AudioChunk,
   type AudioSession,
 } from "@/lib/audio-store";
-import {
-  DEFAULT_NOTES_LANGUAGE,
-  DEFAULT_SPEECH_LANGUAGE,
-  parseNotesLanguage,
-} from "@/lib/languages";
+import { parseNotesLanguage } from "@/lib/languages";
 import { newLecture } from "@/lib/lecture";
 import { downloadLectureAudio } from "@/lib/export/audio";
 import { lectureToMarkdown, slugify, transcriptToMarkdown } from "@/lib/markdown";
@@ -40,6 +36,11 @@ import {
   type ImportMode,
 } from "@/lib/backup/backup";
 import { joinSegments, parseTimestampedText, sortSegments } from "@/lib/segments";
+import {
+  saveSessionPreference,
+  useSessionPreferences,
+  type SessionPreferences,
+} from "@/lib/session-preferences";
 import { deleteLecture, saveLecture, useLectures } from "@/lib/storage";
 import { decodeToMono16k } from "@/lib/stt/audio";
 import { shortModelName } from "@/lib/stt/models";
@@ -65,6 +66,15 @@ function persist(lecture: Lecture) {
   if (!saveLecture(lecture)) toast.error(STORAGE_FULL_MESSAGE);
 }
 
+function updateSessionPreference<K extends keyof SessionPreferences>(
+  key: K,
+  value: SessionPreferences[K],
+) {
+  if (!saveSessionPreference(key, value)) {
+    toast.error("Could not save session options to this browser (storage is full or blocked).");
+  }
+}
+
 type ChunkInput = Pick<AudioChunk, "index" | "blob" | "mimeType" | "durationSec" | "status"> & {
   segments?: Segment[];
 };
@@ -80,11 +90,7 @@ export function useLectureSession() {
   const lectures = useLectures();
 
   // --- settings -----------------------------------------------------------------------------
-  const [audioLang, setAudioLang] = useState(DEFAULT_SPEECH_LANGUAGE);
-  const [notesLang, setNotesLang] = useState(DEFAULT_NOTES_LANGUAGE);
-  const [engineChoice, setEngineChoice] = useState<NotesEngineChoice>("auto");
-  const [modelChoice, setModelChoice] = useState<string | null>(null);
-  const modelId = modelChoice ?? MODEL_NATIVE;
+  const { audioLang, notesLang, engineChoice, modelId, liveEnabled } = useSessionPreferences();
 
   // --- session state ------------------------------------------------------------------------
   const [engines, setEngines] = useState<EngineStatus | null>(null);
@@ -96,7 +102,6 @@ export function useLectureSession() {
   const [sourceChoice, setSourceChoice] = useState<SourceChoice>("mic");
   const [micDeviceId, setMicDeviceId] = useState("");
   const [inputs, setInputs] = useState<AudioInput[]>([]);
-  const [liveEnabled, setLiveEnabled] = useState(true);
   const [live, setLive] = useState<{ text: string; language?: string }>({ text: "" });
   const [notesProgress, setNotesProgress] = useState<string | null>(null);
   const [context, setContext] = useState("");
@@ -966,16 +971,16 @@ export function useLectureSession() {
     setMicDeviceId,
     inputs,
     liveEnabled,
-    setLiveEnabled,
+    setLiveEnabled: (value: boolean) => updateSessionPreference("liveEnabled", value),
     live,
     audioLang,
-    setAudioLang,
+    setAudioLang: (value: string) => updateSessionPreference("audioLang", value),
     notesLang,
-    setNotesLang,
+    setNotesLang: (value: string) => updateSessionPreference("notesLang", value),
     engineChoice,
-    setEngineChoice,
+    setEngineChoice: (value: NotesEngineChoice) => updateSessionPreference("engineChoice", value),
     modelId,
-    setModelChoice,
+    setModelChoice: (value: string) => updateSessionPreference("modelId", value),
     // status
     busy,
     generating,
